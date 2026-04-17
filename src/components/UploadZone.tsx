@@ -1,6 +1,8 @@
 import { Upload, ImageIcon, X, Loader2, Sparkles } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { BoundingBoxOverlay } from "@/components/BoundingBoxOverlay";
+import { AzurePrediction } from "@/lib/azure";
 
 interface Props {
   file: File | null;
@@ -9,9 +11,10 @@ interface Props {
   onFile: (file: File | null) => void;
   onAnalyze: () => void;
   canAnalyze: boolean;
+  predictions?: AzurePrediction[];
 }
 
-export const UploadZone = ({ file, preview, loading, onFile, onAnalyze, canAnalyze }: Props) => {
+export const UploadZone = ({ file, preview, loading, onFile, onAnalyze, canAnalyze, predictions = [] }: Props) => {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -79,11 +82,15 @@ export const UploadZone = ({ file, preview, loading, onFile, onAnalyze, canAnaly
         ) : (
           <div className="space-y-4 animate-scale-in">
             <div className="relative overflow-hidden rounded-xl border border-border bg-muted/30">
-              <img
-                src={preview}
-                alt="Preview"
-                className="max-h-[420px] w-full object-contain"
-              />
+              {predictions.length > 0 ? (
+                <BoundingBoxOverlay src={preview} predictions={predictions} />
+              ) : (
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="max-h-[420px] w-full object-contain"
+                />
+              )}
               {loading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-sm">
                   <div className="absolute inset-0 overflow-hidden">

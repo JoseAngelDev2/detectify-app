@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Activity, Radar } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ConfigPanel } from "@/components/ConfigPanel";
 import { UploadZone } from "@/components/UploadZone";
 import { ResultsCard } from "@/components/ResultsCard";
 import { HistoryPanel, HistoryItem } from "@/components/HistoryPanel";
@@ -9,8 +8,6 @@ import { analyzeImage, AnalysisResult } from "@/lib/azure";
 import { toast } from "sonner";
 
 const Index = () => {
-  const [endpoint, setEndpoint] = useState("");
-  const [apiKey, setApiKey] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -45,7 +42,7 @@ const Index = () => {
     setError(null);
     setResult(null);
     try {
-      const res = await analyzeImage(endpoint, apiKey, file);
+      const res = await analyzeImage(file);
       setResult(res);
 
       if (res.topBrand) {
@@ -133,20 +130,13 @@ const Index = () => {
               loading={loading}
               onFile={handleFile}
               onAnalyze={handleAnalyze}
-              canAnalyze={!!file && !!endpoint && !!apiKey}
+              canAnalyze={!!file}
+              predictions={result?.predictions ?? []}
             />
             <ResultsCard result={result} error={error} />
           </div>
 
           <aside className="space-y-6">
-            <ConfigPanel
-              endpoint={endpoint}
-              apiKey={apiKey}
-              onChange={(e, k) => {
-                setEndpoint(e);
-                setApiKey(k);
-              }}
-            />
             <HistoryPanel items={history} onClear={clearHistory} />
           </aside>
         </div>

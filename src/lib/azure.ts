@@ -18,21 +18,18 @@ export interface AnalysisResult {
   raw: AzureResponse;
 }
 
-export async function analyzeImage(
-  endpoint: string,
-  apiKey: string,
-  file: File
-): Promise<AnalysisResult> {
-  if (!endpoint || !apiKey) {
-    throw new Error("Configura el endpoint y la API key de Azure.");
-  }
+const AZURE_ENDPOINT =
+  "https://fastfoodcustomai-prediction.cognitiveservices.azure.com/customvision/v3.0/Prediction/44f0b41a-112f-4f04-a982-467316e5b209/detect/iterations/Iteration2/image";
+const AZURE_KEY =
+  "2lq4u4kFv66qOHXOSKWpjkJMZ5EshqXI37anfrwQDHXuv3YtNzKSJQQJ99CDACYeBjFXJ3w3AAAIACOGWooX";
 
+export async function analyzeImage(file: File): Promise<AnalysisResult> {
   const buffer = await file.arrayBuffer();
 
-  const res = await fetch(endpoint, {
+  const res = await fetch(AZURE_ENDPOINT, {
     method: "POST",
     headers: {
-      "Prediction-Key": apiKey,
+      "Prediction-Key": AZURE_KEY,
       "Content-Type": "application/octet-stream",
     },
     body: buffer,
