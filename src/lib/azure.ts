@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export interface AzurePrediction {
   tagName: string;
   probability: number;
@@ -18,29 +20,24 @@ export interface AnalysisResult {
   raw: AzureResponse;
 }
 
-const AZURE_ENDPOINT =
-  "https://fastfoodcustomai-prediction.cognitiveservices.azure.com/customvision/v3.0/Prediction/44f0b41a-112f-4f04-a982-467316e5b209/detect/iterations/Iteration2/image";
-const AZURE_KEY =
-  "2lq4u4kFv66qOHXOSKWpjkJMZ5EshqXI37anfrwQDHXuv3YtNzKSJQQJ99CDACYeBjFXJ3w3AAAIACOGWooX";
-
 export async function analyzeImage(file: File): Promise<AnalysisResult> {
   const buffer = await file.arrayBuffer();
 
-  const res = await fetch(AZURE_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Prediction-Key": AZURE_KEY,
-      "Content-Type": "application/octet-stream",
-    },
-    body: buffer,
-  });
+  const { data, error } = await supabase.functions.invoke<AzureResponse>(
+    "analyze-image",
+    {
+      body: buffer,
+      headers: { "Content-Type": "application/octet-stream" },
+    }
+  );
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Azure respondió ${res.status}: ${text || res.statusText}`);
+  if (error) {
+    throw new Error(error.message || "No se pudo analizar la imagen.");
+  }
+  if (!data) {
+    throw new Error("Respuesta vacía del servicio.");
   }
 
-  const data: AzureResponse = await res.json();
   const sorted = [...(data.predictions ?? [])].sort(
     (a, b) => b.probability - a.probability
   );
